@@ -17,14 +17,10 @@ import com.google.zxing.EncodeHintType;
 import com.google.zxing.MultiFormatWriter;
 import com.google.zxing.WriterException;
 import com.google.zxing.common.BitMatrix;
-import com.google.zxing.qrcode.QRCodeWriter;
 import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel;
 import com.uuzuche.lib_zxing.activity.CodeUtils;
 
-import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
 import java.util.HashMap;
-import java.util.Hashtable;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
     private Button qrCreateButton;
@@ -52,9 +48,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     /**
      * 生成一个二维码
-     * @param content
-     * @param width
-     * @param height
+     * @param content 二维码内容
+     * @param width 二维码的宽度
+     * @param height 二维码的高度
      * @return
      */
     public static Bitmap generateQRCode(String content, int width, int height) {
@@ -159,34 +155,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     }
 
-    /**
-     *
-     */
-    public byte[] parsePicture(Bitmap bitmap) {
-        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, byteArrayOutputStream);
-        byte[] byteArray = byteArrayOutputStream.toByteArray();
-        return byteArray;
-    }
-
-    /**
-     * @param inStream
-     * @return byte[]
-     * @throws Exception
-     */
-    public static byte[] readStream(InputStream inStream) throws Exception {
-        byte[] buffer = new byte[1024];
-        int len = -1;
-        ByteArrayOutputStream outStream = new ByteArrayOutputStream();
-        while ((len = inStream.read(buffer)) != -1) {
-            outStream.write(buffer, 0, len);
-        }
-        byte[] data = outStream.toByteArray();
-        outStream.close();
-        inStream.close();
-        return data;
-
-    }
 
     /**
      * 生成二维码
@@ -199,17 +167,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 //        Intent intent = new Intent(MainActivity.this, CaptureActivity.class);
 //        startActivityForResult(intent, 1);
     }
-
-//    public byte[] retriveBitmapByte(byte[] bitmapBytes) {
-//        for (int i = 0; i < bitmapBytes.length - 1; i = i + 4) {
-//            byte[] bytes = new byte[4];
-//            bytes[0] = bitmapBytes[i];
-//            bytes[1] = bitmapBytes[i + 1];
-//            bytes[2] = bitmapBytes[i + 2];
-//            bytes[3] = bitmapBytes[i + 3];
-//
-//        }
-//    }
 
     private static Bitmap bitMatrix2Bitmap(BitMatrix matrix) {
         matrix = updateBit(matrix, 0);
@@ -237,7 +194,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
                 if (matrix.get(x, y))//范围内为黑色的
-                    pixels[y * width + x] = 0xfffffff1;
+                    pixels[y * width + x] = 0xfffffff1; //此处是二维码内容的颜色
                 else//其他的地方为白色
                     pixels[y * width + x] = Color.TRANSPARENT;
             }
@@ -268,37 +225,4 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         return resMatrix;
     }
 
-
-    /**
-     * 根据指定内容生成自定义宽高的二维码图片
-     *
-     * @param content 需要生成二维码的内容
-     * @param width   二维码宽度
-     * @param height  二维码高度
-     * @throws WriterException 生成二维码异常
-     */
-    public static Bitmap makeQRImage(String content, int width, int height)
-            throws WriterException {
-        Hashtable<EncodeHintType, String> hints = new Hashtable<EncodeHintType, String>();
-        hints.put(EncodeHintType.CHARACTER_SET, "UTF-8");
-        // 图像数据转换，使用了矩阵转换
-        BitMatrix bitMatrix = new QRCodeWriter().encode(content,
-                BarcodeFormat.QR_CODE, width, height, hints);
-        int[] pixels = new int[width * height];
-        // 按照二维码的算法，逐个生成二维码的图片，两个for循环是图片横列扫描的结果
-        for (int y = 0; y < height; y++) {
-            for (int x = 0; x < width; x++) {
-                if (bitMatrix.get(x, y))//范围内为黑色的
-                    pixels[y * width + x] = 0xff000000;
-                else//其他的地方为白色
-                    pixels[y * width + x] = 0xffffffff;
-            }
-        }
-        // 生成二维码图片的格式，使用ARGB_8888
-        Bitmap bitmap = Bitmap.createBitmap(width, height,
-                Bitmap.Config.ARGB_8888);
-        //设置像素矩阵的范围
-        bitmap.setPixels(pixels, 0, width, 0, 0, width, height);
-        return bitmap;
-    }
 }
